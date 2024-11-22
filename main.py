@@ -1,7 +1,6 @@
 # main.py
 from app.vectorstore import create_vectorstore
-from app.handle_llm import get_chain
-from app.handle_llm import get_context
+from app.handle_llm import get_chain_2
 import os
 import streamlit as s
 
@@ -13,6 +12,6 @@ s.title("Ethical Hacking Chatbot")
 prompt = s.chat_input("You")
 
 if prompt:
-    response = get_chain(query=prompt)
+    response = get_chain_2(query=prompt)
     # s.write("context : ", get_context(query=prompt))
-    s.write("Mixtral : ", response["text"])
+    s.write("Mixtral : ", response)
