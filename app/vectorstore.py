@@ -3,13 +3,14 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
-
+import os
 # "EN-Ethical Hacking.pdf"
 # "gray-hat-hacking.pdf"
 
 
 embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
-faiss_index = FAISS.load_local("faiss_index", embeddings=embedding_model, allow_dangerous_deserialization=True)
+if os.path.exists('faiss_index'):
+    faiss_index = FAISS.load_local("faiss_index", embeddings=embedding_model, allow_dangerous_deserialization=True)
 
 def create_vectorstore(*args):
     documents = ""

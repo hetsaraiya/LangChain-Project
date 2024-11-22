@@ -1,6 +1,6 @@
 # app/handle_llm.py
 from langchain_groq import ChatGroq
-from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationBufferWindowMemory
 from app.vectorstore import embedding_model, faiss_index
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, HumanMessagePromptTemplate
