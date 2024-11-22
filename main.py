@@ -1,10 +1,9 @@
 # main.py
 from app.vectorstore import create_vectorstore
 from app.handle_llm import get_chain
+from app.handle_llm import get_context
 import os
 import streamlit as s
-
-prompt = "Hello how are you doing today?"
 
 if not os.path.exists('faiss_index'):
     create_vectorstore("EN-Ethical Hacking.pdf", "gray-hat-hacking.pdf")
@@ -15,4 +14,5 @@ prompt = s.chat_input("You")
 
 if prompt:
     response = get_chain(query=prompt)
-    s.write("Bot", response["text"])
+    s.write("context : ", get_context(query=prompt))
+    s.write("Mixtral : ", response["text"])

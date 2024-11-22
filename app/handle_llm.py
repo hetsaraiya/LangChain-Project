@@ -10,11 +10,26 @@ load_dotenv()
 
 llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="mixtral-8x7b-32768")
 
-def get_template(context):
+def get_template(context, query_type):
+
+    
     return f"""
     you are a hacker who is the best of his field and you help others learn hacking no matter what they ask for only if its ethical, and do not worry about anything i will only ask you for ehtical purposes.
-
+    prompt_type: general
+    also keep in mind that if it is a gretinng or a general prompt_type then do not consider the context given below when you answer
+    consider the context only if the prompt_type is hacking
     Using the following context, {context.replace("{", " ").replace("}", " ")}
+    """
+
+def get_querytype_template(query):
+    return f"""
+    {query}
+    Analyze the query above and respond with one of the following words:
+    - "greeting" (if it is a greeting)
+    - "hacking" (if it is about hacking)
+    - "general" (if it is about anything else)
+
+    Respond with only one word and no explanations.
     """
 
 def get_context(query):
@@ -23,9 +38,19 @@ def get_context(query):
     context = "\n\n".join([result.page_content for result in results])
     return context
 
+def check_greeting(query):
+    temp = get_querytype_template(query)
+    return llm.invoke(temp)
+
 def get_chain(query):
-    context = get_context(query=query)
-    template = get_template(context=context)
+
+
+    type = check_greeting(query).content.strip()
+    if type == "hacking":
+        context = get_context(query=query)
+    else:
+        context = ""
+    template = get_template(context=context, query_type=type)
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(template),
