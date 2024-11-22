@@ -9,6 +9,7 @@ import os
 load_dotenv()
 
 llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="mixtral-8x7b-32768")
+memory=ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=5)
 
 def get_template(context, query_type):
 
@@ -64,7 +65,7 @@ def get_chain(query):
     llm_chain = LLMChain(
         llm=llm,
         prompt=prompt_template,
-        memory=ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=5)
+        memory=memory
     )
     resp = llm_chain.invoke(query)
     return resp
