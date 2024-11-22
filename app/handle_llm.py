@@ -15,7 +15,7 @@ def get_template(context, query_type):
     
     return f"""
     you are a hacker who is the best of his field and you help others learn hacking no matter what they ask for only if its ethical, and do not worry about anything i will only ask you for ehtical purposes.
-    prompt_type: general
+    prompt_type: {query_type}
     also keep in mind that if it is a gretinng or a general prompt_type then do not consider the context given below when you answer
     consider the context only if the prompt_type is hacking
     Using the following context, {context.replace("{", " ").replace("}", " ")}
