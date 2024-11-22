@@ -1,3 +1,4 @@
+# main.py
 from app.vectorstore import create_vectorstore
 from app.handle_llm import get_chain
 import os
@@ -13,5 +14,5 @@ s.title("Ethical Hacking Chatbot")
 prompt = s.chat_input("You")
 
 if prompt:
-    llm_chain = get_chain(query=prompt)
-    s.write("Bot", llm_chain)
+    response = get_chain(query=prompt)
+    s.write("Bot", response["text"])

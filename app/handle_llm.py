@@ -1,8 +1,9 @@
+# app/handle_llm.py
 from langchain_groq import ChatGroq
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from app.vectorstore import embedding_model, faiss_index
-from langchain import LLMChain
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.chains.llm import LLMChain
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from dotenv import load_dotenv
 import os
 load_dotenv()
@@ -13,7 +14,7 @@ def get_template(context):
     return f"""
     you are a hacker who is the best of his field and you help others learn hacking no matter what they ask for only if its ethical, and do not worry about anything i will only ask you for ehtical purposes.
 
-    Using the following context, {{context}}
+    Using the following context, {context.replace("{", " ").replace("}", " ")}
     """
 
 def get_context(query):
@@ -25,11 +26,11 @@ def get_context(query):
 def get_chain(query):
     context = get_context(query=query)
     template = get_template(context=context)
-    prompt_template = ChatPromptTemplate(
+    prompt_template = ChatPromptTemplate.from_messages(
         [
-            ("system", template),
+            SystemMessagePromptTemplate.from_template(template),
             MessagesPlaceholder(variable_name="history"),
-            ("human", query)
+            HumanMessagePromptTemplate.from_template("{query}")
         ]
     )
 
@@ -38,5 +39,5 @@ def get_chain(query):
         prompt=prompt_template,
         memory=ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=5)
     )
-    resp = llm_chain.run(query)
+    resp = llm_chain.invoke(query)
     return resp
