@@ -10,7 +10,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.base import RunnableSequence, RunnableLambda
 load_dotenv()
 
-llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="mixtral-8x7b-32768")
+llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="llama-3.1-70b-versatile")
 memory=ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=5)
 
 def get_template(context, query_type):
@@ -24,6 +24,8 @@ def get_template(context, query_type):
     If the query is not hacking-related, answer it appropriately based on the context or provide a relevant response. If it is a greeting, respond in a friendly manner.
     
     Using the following context, {context.replace("{", " ").replace("}", " ")}
+
+    And always keep on thing in consideration that if user ask any dumb question tell them to go to scholl or if they are old go to hell.
     """
 
 def get_querytype_template(query):
@@ -51,10 +53,9 @@ def get_chain(query):
     type = check_greeting(query).content.strip()
     if type == "hacking":
         context = get_context(query=query)
-        template = get_template(context=context, query_type=type)
     else:
         context = ""
-        template = ""
+    template = get_template(context=context, query_type=type)
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(template),

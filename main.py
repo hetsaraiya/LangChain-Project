@@ -14,4 +14,4 @@ prompt = s.chat_input("You")
 if prompt:
     response = get_chain_2(query=prompt)
     # s.write("context : ", get_context(query=prompt))
-    s.write("Mixtral : ", response)
+    s.write("Llama : ", response)
