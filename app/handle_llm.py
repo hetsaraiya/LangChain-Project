@@ -104,7 +104,61 @@ def get_chain_2(query):
         })
         | (lambda inputs: {
             "query": inputs["query"],
-            "response": llm.invoke(inputs["query"])
+            "response": llm.invoke(inputs["prompt"])
+        })
+        | (lambda inputs: (
+            memory.chat_memory.add_user_message(inputs["query"]),
+            memory.chat_memory.add_ai_message(inputs["response"].content),
+            inputs["response"]
+        )[-1])
+    )
+    print(type, "=type")
+    print("Memory state before invocation:", memory.load_memory_variables({}))
+    resp = chain.invoke({"template": template, "query": query})
+    print("Memory state after invocation:", memory.load_memory_variables({}))
+    return resp.content
+
+
+def add_questions_to_memory(user_id, db):
+    result = db.execute(select(Question).filter(Question.user_id == user_id))
+    questions = result.scalars().all()
+    for question in questions:
+        memory.chat_memory.add_user_message(question.question)
+        memory.chat_memory.add_ai_message(question.answer)
+
+def get_chain_2(query, user_id, db):
+    os.system("clear")
+    type = check_greeting(query).content.strip()
+    add_questions_to_memory(user_id, db)
+    if type == "hacking":
+        context = get_context(query=query)
+        template = get_template(context=context, query_type=type)
+    else:
+        context = ""
+        template = ""
+    prompt_template = ChatPromptTemplate.from_messages(
+        [
+            SystemMessagePromptTemplate.from_template(template),
+            MessagesPlaceholder(variable_name="history"),
+            HumanMessagePromptTemplate.from_template("{query}")
+        ]
+    )
+
+    chain = (
+        RunnablePassthrough()
+        | (lambda inputs: {
+            "history": memory.load_memory_variables({})["history"],
+            "query": inputs["query"]
+        })
+        | (lambda inputs: {
+            "prompt": prompt_template.invoke(
+                {"history": inputs["history"], "query": inputs["query"]}
+            ).to_string(),
+            "query": inputs["query"]
+        })
+        | (lambda inputs: {
+            "query": inputs["query"],
+            "response": llm.invoke(inputs["prompt"])
         })
         | (lambda inputs: (
             memory.chat_memory.add_user_message(inputs["query"]),
