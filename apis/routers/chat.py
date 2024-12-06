@@ -27,17 +27,18 @@ async def create_question(question: QuestionCreate, db: AsyncSession = Depends(g
 
 @router.post("/chat/query/", response_model=QuestionResponse)
 async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).filter(User.id == question.user_id))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+    # query = select(User).filter(User.id == question.user_id)
+    # result = await db.execute(query)
+    # user = result.scalars().all()
+    # if not user:
+    #     raise HTTPException(status_code=404, detail="User not found")
     
-    response_content = get_chain_2(question.question)
+    response_content = await get_chain_2(question.question, user_id=question.user_id, db=db)
     
     db_question = Question(
         question=question.question,
         answer=response_content,
-        user_id=2
+        user_id=question.user_id
     )
     db.add(db_question)
     await db.commit()

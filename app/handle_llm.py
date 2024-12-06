@@ -2,12 +2,15 @@
 from langchain_groq import ChatGroq
 from langchain.memory import ConversationBufferWindowMemory
 from app.vectorstore import embedding_model, faiss_index
+from langchain_core.runnables import RunnablePassthrough
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from dotenv import load_dotenv
 import os
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.runnables.base import RunnableSequence, RunnableLambda
+from sqlalchemy import select
+
+from apis.models import User, Question
+
 load_dotenv()
 
 llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="llama-3.1-70b-versatile")
@@ -72,64 +75,19 @@ def get_chain(query):
     resp = llm_chain.invoke(query)
     return resp
 
-
-def get_chain_2(query):
-    os.system("clear")
-    type = check_greeting(query).content.strip()
-    if type == "hacking":
-        context = get_context(query=query)
-        template = get_template(context=context, query_type=type)
-    else:
-        context = ""
-        template = ""
-    prompt_template = ChatPromptTemplate.from_messages(
-        [
-            SystemMessagePromptTemplate.from_template(template),
-            MessagesPlaceholder(variable_name="history"),
-            HumanMessagePromptTemplate.from_template("{query}")
-        ]
-    )
-
-    chain = (
-        RunnablePassthrough()
-        | (lambda inputs: {
-            "history": memory.load_memory_variables({})["history"],
-            "query": inputs["query"]
-        })
-        | (lambda inputs: {
-            "prompt": prompt_template.invoke(
-                {"history": inputs["history"], "query": inputs["query"]}
-            ).to_string(),
-            "query": inputs["query"]
-        })
-        | (lambda inputs: {
-            "query": inputs["query"],
-            "response": llm.invoke(inputs["prompt"])
-        })
-        | (lambda inputs: (
-            memory.chat_memory.add_user_message(inputs["query"]),
-            memory.chat_memory.add_ai_message(inputs["response"].content),
-            inputs["response"]
-        )[-1])
-    )
-    print(type, "=type")
-    print("Memory state before invocation:", memory.load_memory_variables({}))
-    resp = chain.invoke({"template": template, "query": query})
-    print("Memory state after invocation:", memory.load_memory_variables({}))
-    return resp.content
-
-
-def add_questions_to_memory(user_id, db):
-    result = db.execute(select(Question).filter(Question.user_id == user_id))
+async def add_questions_to_memory(user_id, db):
+    result = await db.execute(select(Question).filter(Question.user_id == user_id))
     questions = result.scalars().all()
+    if not questions:
+        return "no question found"
     for question in questions:
         memory.chat_memory.add_user_message(question.question)
         memory.chat_memory.add_ai_message(question.answer)
 
-def get_chain_2(query, user_id, db):
+async def get_chain_2(query, user_id, db):
     os.system("clear")
     type = check_greeting(query).content.strip()
-    add_questions_to_memory(user_id, db)
+    await add_questions_to_memory(user_id, db)
     if type == "hacking":
         context = get_context(query=query)
         template = get_template(context=context, query_type=type)
@@ -171,3 +129,6 @@ def get_chain_2(query, user_id, db):
     resp = chain.invoke({"template": template, "query": query})
     print("Memory state after invocation:", memory.load_memory_variables({}))
     return resp.content
+
+
+# docker run -d --name hackbot -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dbname -p 5431:5432 postgres:13

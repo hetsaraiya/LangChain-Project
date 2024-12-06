@@ -7,7 +7,7 @@ from apis.logger import logger
 load_dotenv(".env.local")
 # SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 try:
