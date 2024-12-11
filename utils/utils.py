@@ -36,3 +36,14 @@ async def get_querytype_template(query):
 async def check_greeting(query, llm):
     temp = await get_querytype_template(query)
     return llm.invoke(temp)
+
+async def generate_title(query, llm):
+    template = f"""
+    {query}
+
+    Analyze the query above and respond with a 2-3 word long chat session title for the query.
+
+    never add "
+    """
+    title = llm.invoke(template)
+    return title.content

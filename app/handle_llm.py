@@ -4,7 +4,7 @@ import os
 from langchain_groq import ChatGroq
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.runnables import RunnablePassthrough
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from langchain_core.prompts import (
     ChatPromptTemplate,MessagesPlaceholder,
     SystemMessagePromptTemplate,

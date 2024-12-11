@@ -1,13 +1,15 @@
+import random
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+
 from apis.db import get_db
 from apis.schemas import QuestionCreate, QuestionResponse
 from apis.models import Session, User, Question
 from app.handle_llm import get_chain
 from apis.auth import get_current_user
-import random
-
+from utils.utils import generate_title
+from app.handle_llm import llm
 router = APIRouter()
 @router.post("/chat/query/", response_model=QuestionResponse)
 async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -29,7 +31,7 @@ async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db)
         session = result.scalars().first()
 
         if not question.session_id:
-            session = Session(user_id=current_user.id, session_token=f"{random.randint(1, 999999)}")
+            session = Session(user_id=current_user.id, session_token=f"{random.randint(1, 999999)}", title=(await generate_title(query=question.question, llm=llm)))
             db.add(session)
             await db.commit()
             await db.refresh(session)
@@ -44,7 +46,7 @@ async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db)
         db_question = Question(
             question=question.question,
             answer=response_content,
-            session_id=session.id
+            session_id=session.id,
         )
         db.add(db_question)
         await db.commit()

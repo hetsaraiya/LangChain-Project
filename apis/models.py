@@ -20,6 +20,7 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="sessions")
     questions = relationship("Question", back_populates="session")
+    title = Column(String, nullable=False)
 
 class Question(Base):
     __tablename__ = 'question'

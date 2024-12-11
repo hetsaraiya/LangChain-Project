@@ -77,6 +77,7 @@ async def get_user_sessions(db: Session = Depends(get_db), current_user: User = 
                 {
                     "id": session.id,
                     "token": session.session_token,
+                    "title": session.title,
                 } for session in sessions
             ]
         }
