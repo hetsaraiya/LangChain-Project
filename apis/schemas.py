@@ -21,13 +21,12 @@ class TokenData(BaseModel):
 
 class QuestionCreate(BaseModel):
     question: str
-    user_id: int
+    session_id: int = None
 
 class QuestionResponse(BaseModel):
     id: int
     question: str
     answer: str
-    user_id: int
 
     class Config:
         orm_mode = True

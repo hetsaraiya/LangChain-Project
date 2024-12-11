@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import os
 from apis.logger import logger
 load_dotenv(".env.local")
-# SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -22,22 +21,13 @@ except Exception as e:
 
 
 try:
-    SessionLocal = async_sessionmaker(bind=async_engine, autocommit=False, autoflush=False)
+    SessionLocal = async_sessionmaker(bind=async_engine, autocommit=False, autoflush=False, expire_on_commit=False)
     logger.info("Session maker created successfully.")
 except Exception as e:
     logger.error(f"Failed to create session maker: {e}")
     raise
 
 Base = declarative_base()
-
-# try:
-#     from app.models.user import User, UserTypes
-#     from app.models.room import Room
-#     from app.models.booking import RoomBooking
-#     logger.info("Models imported successfully.")
-# except ImportError as e:
-#     logger.error(f"Error importing models: {e}")
-#     raise
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     try:

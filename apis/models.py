@@ -11,12 +11,20 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     phone_number = Column(Integer, nullable=False)
     tokens_available = Column(Integer, default=False)
-    questions = relationship("Question", back_populates="user")
+    sessions = relationship("Session", back_populates="user")
+
+class Session(Base):
+    __tablename__ = 'session'
+    id = Column(Integer, primary_key=True, index=True)
+    session_token = Column(String, nullable=False, unique=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates="sessions")
+    questions = relationship("Question", back_populates="session")
 
 class Question(Base):
     __tablename__ = 'question'
     id = Column(Integer, primary_key=True, index=True)
     question = Column(String, nullable=False)
     answer = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    user = relationship("User", back_populates="questions")
+    session_id = Column(Integer, ForeignKey("session.id"))
+    session = relationship("Session", back_populates="questions")
