@@ -7,6 +7,7 @@ from apis.routers import chat
 app = FastAPI()
 
 origins = [
+    "http://192.168.3.71:5173",
     "http://localhost:5173",
     "http://localhost:3000"
 ]

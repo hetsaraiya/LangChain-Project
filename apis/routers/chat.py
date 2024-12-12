@@ -41,7 +41,7 @@ async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db)
             )
             session = result.scalars().first()
 
-        response_content = await get_chain(question.question, user_id=current_user.id, db=db, session_id=session.id)
+        response_content = await get_chain(question.question, db=db, session_id=session.id)
 
         db_question = Question(
             question=question.question,

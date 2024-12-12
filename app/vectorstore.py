@@ -10,7 +10,6 @@ embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
 
 def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
-    # To avoid division by zero
     norms[norms == 0] = 1
     return embeddings / norms
 
@@ -27,7 +26,7 @@ def create_vectorstore(*args):
 
     texts = [doc.page_content for doc in split_docs]
 
-    embeddings = embedding_model.embed_documents(texts)  # Assuming embed_documents returns a list of embeddings
+    embeddings = embedding_model.embed_documents(texts)
 
     embeddings_np = np.array(embeddings)
 

@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -14,14 +15,14 @@ class UserResponse(BaseModel):
     email: EmailStr
 
 class TokenData(BaseModel):
-    email: str = None
+    email: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 class QuestionCreate(BaseModel):
     question: str
-    session_id: int = None
+    session_id: Optional[int] = None
 
 class QuestionResponse(BaseModel):
     id: int

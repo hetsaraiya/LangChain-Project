@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 
+from app.vectorstore import normalize_embeddings
 from utils.constants import TEMPLATE
 
 load_dotenv()
@@ -18,7 +19,8 @@ async def get_template(context, query_type):
 
 async def get_context(query, embedding_model, faiss_index):
     query_embedding = embedding_model.embed_query(query)
-    results = faiss_index.similarity_search_by_vector(query_embedding, k=10)
+    query_embedding = normalize_embeddings(query_embedding)
+    results = faiss_index.similarity_search_by_vector(query_embedding[0], k=10)
     context = "\n\n".join([result.page_content for result in results])
     return context
 
