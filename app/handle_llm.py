@@ -2,7 +2,6 @@
 import os
 
 from langchain_groq import ChatGroq
-from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.runnables import RunnablePassthrough
 from sqlalchemy import select, desc
@@ -16,7 +15,6 @@ from app.vectorstore import embedding_model, faiss_index
 from apis.models import Question
 from utils.utils import check_greeting, get_context, get_template
 
-# llm = ChatOpenAI(api_key=os.getenv('OPENAI_API_KEY'), model_name="gpt-4o")
 llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="llama-3.1-70b-versatile")
 
 async def add_questions_to_memory(session_id, db):
