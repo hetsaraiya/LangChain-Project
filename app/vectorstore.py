@@ -9,6 +9,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
 
 def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
+    embeddings = np.array(embeddings)
+    if embeddings.ndim == 1:
+        embeddings = embeddings.reshape(1, -1)
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     norms[norms == 0] = 1
     return embeddings / norms

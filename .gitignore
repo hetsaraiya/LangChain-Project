@@ -3,3 +3,5 @@
 __pycache__/
 temp.py
 app/logs/
+faiss_index 2
+faiss_index 3

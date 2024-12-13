@@ -2,6 +2,8 @@ import random
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import delete
+
 
 from apis.db import get_db
 from apis.schemas import QuestionCreate, QuestionResponse
@@ -53,6 +55,44 @@ async def query_llm(question: QuestionCreate, db: AsyncSession = Depends(get_db)
         await db.refresh(db_question)
 
         return db_question
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+@router.delete("/chat/session/{session_id}", response_model=dict)
+async def delete_session(session_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Delete a chat session and all associated questions from the database.
+
+    Args:
+        session_id (int): The ID of the session to delete.
+        db (AsyncSession): The database session for executing queries.
+        current_user (User): The current authenticated user making the request.
+
+    Returns:
+        dict: A message indicating the session was deleted.
+    """
+    try:
+        print(session_id)
+        result = await db.execute(
+            select(Session).filter(Session.id == session_id)
+        )
+        session = result.scalars().first()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        if not session.user_id == current_user.id:
+            raise HTTPException(status_code=403, detail="Forbidden: You do not have permission to delete this session")
+
+        await db.execute(
+            delete(Question).filter(Question.session_id == session_id)
+        )
+        await db.execute(
+            delete(Session).filter(Session.id == session_id)
+        )
+        await db.commit()
+
+        return {"message": "Session and all associated questions deleted successfully"}
     except HTTPException as http_exc:
         raise http_exc
     except Exception as e:

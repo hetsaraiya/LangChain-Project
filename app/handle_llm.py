@@ -5,6 +5,7 @@ from langchain_groq import ChatGroq
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_core.runnables import RunnablePassthrough
 from sqlalchemy import select, desc
+from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import (
     ChatPromptTemplate,MessagesPlaceholder,
     SystemMessagePromptTemplate,
@@ -16,6 +17,7 @@ from apis.models import Question
 from utils.utils import check_greeting, get_context, get_template
 
 llm = ChatGroq(temperature=0.9, groq_api_key=os.getenv('GROQ_API_KEY'), model_name="llama-3.1-70b-versatile")
+# llm = ChatAnthropic(temperature=0.9, model_name="claude-3-opus-20240229", api_key=os.getenv('CLAUDE_API_KEY'))
 
 async def add_questions_to_memory(session_id, db):
     """
@@ -30,7 +32,7 @@ async def add_questions_to_memory(session_id, db):
     )
     questions = result.scalars().all()
     
-    memory = ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=5)
+    memory = ConversationBufferWindowMemory(memory_key="history", return_messages=True, k=20)
 
     for question in questions:
         memory.chat_memory.add_user_message(question.question)
@@ -41,16 +43,17 @@ async def add_questions_to_memory(session_id, db):
 async def get_chain(query, db, session_id):
     os.system("clear")
     query_type = (await check_greeting(query, llm)).content.strip()
-    print(f"Type: {query_type}")
+    print(f"Type:={query_type}==")
     memory = await add_questions_to_memory(db=db, session_id=session_id)
 
-    if type == "hacking":
+    if query_type == "hacking":
         context = await get_context(query=query, embedding_model=embedding_model, faiss_index=faiss_index)
         template = await get_template(context=context, query_type=type)
     else:
         context = ""
         template = ""
 
+    print(f"Context ===== : {context}")
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessagePromptTemplate.from_template(template),
