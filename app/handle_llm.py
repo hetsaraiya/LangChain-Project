@@ -13,7 +13,7 @@ from langchain_core.prompts import (
     HumanMessagePromptTemplate
 )
 
-from app.vectorstore import embedding_model, faiss_index
+from app.vectorstore import embedding_model, index
 from apis.models import Question
 from utils.utils import check_greeting, get_context, get_template
 
@@ -53,7 +53,7 @@ async def get_chain(query, db, session_id):
 
         if query_type == "hacking":
             print(query)
-            context = await get_context(query=query, embedding_model=embedding_model, faiss_index=faiss_index)
+            context = await get_context(query=query, embedding_model=embedding_model, index=index)
         else:
             context = ""
 

@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import numpy as np
 
-from app.vectorstore import normalize_embeddings
+from app.vectorstore import normalize_embeddings, index
 from utils.constants import TEMPLATE
 from utils.exceptions import CannotGetContext, LLMError
 
@@ -27,16 +27,16 @@ async def get_template(context, query_type):
     
     return formatted_template
 
-async def get_context(query, embedding_model, faiss_index):
+async def get_context(query, embedding_model, index):
     try:
         print("Query: ", query)
         query_embedding = embedding_model.embed_query(query)
         print("Query embedding: ", query_embedding)
         query_embedding = normalize_embeddings(query_embedding)
         print("Normalized query embedding: ", query_embedding)
-        results = faiss_index.similarity_search_by_vector(query_embedding[0], k=7)
-        print("Results: ", results)
-        context = "\n\n".join([result.page_content for result in results])
+        D, I = index.search(query_embedding, 7)
+        print("Results: ", I)
+        context = "\n\n".join([result.page_content for result in I])
         print("Context: ", context)
         return context
     except Exception as e:

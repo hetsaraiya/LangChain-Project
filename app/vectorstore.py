@@ -1,14 +1,13 @@
 # app/vectorstore.py
 import os
 import numpy as np
-from langchain_community.vectorstores import FAISS
+import faiss
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app.embeddings import AIEmbeddings
 from utils.constants import AI_API_KEY
-# embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
+
 embedding_model = AIEmbeddings(api_key=AI_API_KEY)
 
 def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
@@ -19,8 +18,8 @@ def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
     norms[norms == 0] = 1
     return embeddings / norms
 
-if os.path.exists('faiss_index'):
-    faiss_index = FAISS.load_local("faiss_index", embeddings=embedding_model, allow_dangerous_deserialization=True)
+if os.path.exists('faiss_index/index.faiss'):
+    index = faiss.read_index('faiss_index/index.faiss')
 
 def create_vectorstore(*args):
     documents = []
@@ -38,8 +37,12 @@ def create_vectorstore(*args):
 
     normalized_embeddings = normalize_embeddings(embeddings_np)
 
-    text_embeddings = list(zip(texts, normalized_embeddings))
+    d = normalized_embeddings.shape[1]
+    nlist = 100
+    quantizer = faiss.IndexFlatL2(d)
+    index = faiss.IndexIVFFlat(quantizer, d, nlist, faiss.METRIC_L2)
 
-    faiss_index = FAISS.from_embeddings(text_embeddings, embedding_model)
+    index.train(normalized_embeddings)
+    index.add(normalized_embeddings)
 
-    faiss_index.save_local("faiss_index")
+    faiss.write_index(index, 'faiss_index/index.faiss')
