@@ -106,7 +106,7 @@ async def get_session_qa(session_id: int, db: Session = Depends(get_db), current
         if not session or session.user_id != current_user.id:
             raise HTTPException(status_code=404, detail="Session not found or access denied")
         
-        qa_pairs = await db.execute(select(Question).where(Question.session_id == session_id))
+        qa_pairs = await db.execute(select(Question).where(Question.session_id == session_id).order_by(Question.id))
         qa_pairs = qa_pairs.scalars().all()
         return {
             "session_id": session_id,

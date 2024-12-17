@@ -3,5 +3,7 @@
 __pycache__/
 temp.py
 app/logs/
-faiss_index 2
-faiss_index 3
+faiss_index 2 default
+faiss_index 3 new model
+faiss_index 4 overlap
+faiss_index

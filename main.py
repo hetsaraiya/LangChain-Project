@@ -4,6 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from apis.routers import login
 from apis.routers import user
 from apis.routers import chat
+from utils.exceptions import (
+    AIHostUnavailable, ai_host_unavailable,
+    APILimitExceeded, api_limit_exceeded_handler,
+    CannotGetContext, cannot_get_context_handler,
+    LLMError, llm_error_handler,
+    CrudError, crud_error_handler
+)
+
 app = FastAPI()
 
 origins = [
@@ -11,6 +19,12 @@ origins = [
     "http://localhost:5173",
     "http://localhost:3000"
 ]
+
+app.add_exception_handler(AIHostUnavailable, ai_host_unavailable)
+app.add_exception_handler(APILimitExceeded, api_limit_exceeded_handler)
+app.add_exception_handler(CannotGetContext, cannot_get_context_handler)
+app.add_exception_handler(LLMError, llm_error_handler)
+app.add_exception_handler(CrudError, crud_error_handler)
 
 app.add_middleware(
     CORSMiddleware,

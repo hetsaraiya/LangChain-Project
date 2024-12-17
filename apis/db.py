@@ -36,6 +36,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             yield db
     except Exception as e:
         logger.error(f"Error while accessing the database session: {e}")
-        raise
+        raise e
     finally:
         logger.info("Database session closed.")

@@ -6,7 +6,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
+from app.embeddings import AIEmbeddings
+from utils.constants import AI_API_KEY
+# embedding_model = HuggingFaceBgeEmbeddings(model_name="all-MiniLM-L6-v2")
+embedding_model = AIEmbeddings(api_key=AI_API_KEY)
 
 def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
     embeddings = np.array(embeddings)
